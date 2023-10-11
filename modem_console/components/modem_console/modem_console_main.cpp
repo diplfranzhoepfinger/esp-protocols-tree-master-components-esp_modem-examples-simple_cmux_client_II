@@ -97,7 +97,7 @@ command_result handle_urc(uint8_t *data, size_t len)
 }
 #endif
 
-extern "C" void app_main(void)
+extern "C" void modem_console_main(void)
 {
     static RTC_RODATA_ATTR char apn_rtc[20] = DEFAULT_APN;
     static RTC_DATA_ATTR modem_mode mode_rtc = esp_modem::modem_mode::COMMAND_MODE;
