@@ -176,7 +176,19 @@ extern "C" void simple_cmux_client_main(void)
     assert(dce);
 
     //This delay was sucessfully tested on a SIMCOM A7672, but it might be different for other Modems
+    dce->sync();
+    dce->sync();
+
     vTaskDelay(2000 / portTICK_PERIOD_MS);
+    dce->sync();
+
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    dce->sync();
+
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    dce->sync();
+    dce->sync();
+    dce->sync();
 
     /* Try to connect to the network and publish an mqtt topic */
     StatusHandler handler;
