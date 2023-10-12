@@ -52,9 +52,6 @@
  */
 #define DEFAULT_APN CONFIG_EXAMPLE_MODEM_PPP_APN
 
-#define GPIO_OUTPUT_PWRKEY    (gpio_num_t)CONFIG_EXAMPLE_MODEM_PWRKEY_PIN
-#define GPIO_OUTPUT_PIN_SEL  (1ULL<<GPIO_OUTPUT_PWRKEY)
-
 extern "C" void modem_console_register_http(void);
 extern "C" void modem_console_register_ping(void);
 
@@ -64,30 +61,6 @@ static esp_console_repl_t *s_repl = nullptr;
 using namespace esp_modem;
 static SignalGroup exit_signal;
 
-
-void config_gpio(void)
-{
-    gpio_config_t io_conf = {};                     //zero-initialize the config structure.
-
-    io_conf.intr_type = GPIO_INTR_DISABLE;          //disable interrupt
-    io_conf.mode = GPIO_MODE_OUTPUT;                //set as output mode
-    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;     //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   //disable pull-down mode
-    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;       //disable pull-up mode
-
-    gpio_config(&io_conf);                          //configure GPIO with the given settings
-}
-
-void wakeup_modem(void)
-{
-    /* Power on the modem */
-    ESP_LOGI(TAG, "Power on the modem");
-    gpio_set_level(GPIO_OUTPUT_PWRKEY, 1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio_set_level(GPIO_OUTPUT_PWRKEY, 0);
-
-    vTaskDelay(pdMS_TO_TICKS(2000));
-}
 
 #ifdef CONFIG_EXAMPLE_MODEM_DEVICE_SHINY
 command_result handle_urc(uint8_t *data, size_t len)
@@ -102,7 +75,6 @@ extern "C" void modem_console_main(void)
     static RTC_RODATA_ATTR char apn_rtc[20] = DEFAULT_APN;
     static RTC_DATA_ATTR modem_mode mode_rtc = esp_modem::modem_mode::COMMAND_MODE;
 
-    config_gpio();
 
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
@@ -191,6 +163,8 @@ extern "C" void modem_console_main(void)
 #endif
 
     assert(dce != nullptr);
+
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
     if (dte_config.uart_config.flow_control == ESP_MODEM_FLOW_CONTROL_HW) {
         if (command_result::OK != dce->set_flow_control(2, 2)) {
@@ -411,13 +385,6 @@ extern "C" void modem_console_main(void)
         ESP_LOGI(TAG, "Entering deep sleep for %d sec", tout);
         ESP_LOGI(TAG, "Wakeup Cause: %d ", esp_sleep_get_wakeup_cause());
         esp_deep_sleep(tout * 1000000);
-        return 0;
-    });
-
-    /* Wake up modem */
-    const ConsoleCommand WakeupModem("wakeup_modem", "Wakes up the modem from PSM", no_args, [&](ConsoleCommand * c) {
-        wakeup_modem();
-        ESP_LOGI(TAG, "OK");
         return 0;
     });
 
