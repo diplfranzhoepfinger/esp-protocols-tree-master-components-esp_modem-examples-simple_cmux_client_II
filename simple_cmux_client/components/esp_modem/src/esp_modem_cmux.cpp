@@ -230,13 +230,17 @@ bool CMux::on_header(CMuxFrame &frame)
     }
     dlci = frame_header[1] >> 2;
     type = frame_header[2];
-    // Sanity check for expected values of DLCI and type,
-    // since CRC could be evaluated after the frame payload gets received
-    if (dlci > MAX_TERMINALS_NUM || (frame_header[1] & 0x01) == 0 ||
-            (((type & FT_UIH) != FT_UIH) &&  type != (FT_UA | PF) ) ) {
-        recover_protocol(protocol_mismatch_reason::UNEXPECTED_HEADER);
-        return true;
-    }
+//    // Sanity check for expected values of DLCI and type,
+//    // since CRC could be evaluated after the frame payload gets received
+//    if (dlci > MAX_TERMINALS_NUM || (frame_header[1] & 0x01) == 0 ||
+//            (((type & FT_UIH) != FT_UIH) &&  type != (FT_UA | PF) ) ) {
+//        ESP_LOGD("CMUX", "dlci (%d) > MAX_TERMINALS_NUM (%d)           ==> %s", dlci, MAX_TERMINALS_NUM, dlci > MAX_TERMINALS_NUM ? "true" : "false");
+//        ESP_LOGD("CMUX", "frame_header[1] (%d) & 0x01) (%d) == 0       ==> %s", frame_header[1], (frame_header[1] & 0x01), (frame_header[1] & 0x01) == 0 ? "true" : "false");
+//        ESP_LOGD("CMUX", "(((type(%d) & FT_UIH) != FT_UIH)             ==> %s", type,  ((type & FT_UIH) != FT_UIH) ? "true" : "false");
+//        ESP_LOGD("CMUX", "type(%d) != (FT_UA | PF)                     ==> %s", type,  type != (FT_UA | PF) ? "true" : "false");
+//        recover_protocol(protocol_mismatch_reason::UNEXPECTED_HEADER);
+//        return true;
+//    }
     payload_len += (frame_header[3] >> 1);
     frame.advance(payload_offset);
     state = cmux_state::PAYLOAD;
